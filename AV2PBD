@@ -78,7 +78,8 @@ SELECT * FROM Pagamento WHERE id_pagamento = 1;
 
 -- Carros disponíveis em um dia específico
 SELECT * FROM Carro
-WHERE status = 'livre' AND id_carro NOT IN (
+WHERE status = 'livre' 
+AND id_carro IN (
     SELECT id_carro FROM Reserva
     WHERE '2025-07-01' BETWEEN data_inicio AND data_fim
     AND status_reserva = 'ativa'
