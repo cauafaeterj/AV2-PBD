@@ -1,0 +1,93 @@
+CREATE TABLE Cliente (
+    id_cliente INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100),
+    cpf VARCHAR(14) UNIQUE,
+    telefone VARCHAR(20),
+    email VARCHAR(100)
+);
+
+CREATE TABLE Loja (
+    id_loja INT PRIMARY KEY AUTO_INCREMENT,
+    nome VARCHAR(100),
+    cidade VARCHAR(100),
+    aeroporto BOOLEAN,
+    endereco VARCHAR(200)
+);
+
+CREATE TABLE Carro (
+    id_carro INT PRIMARY KEY AUTO_INCREMENT,
+    placa VARCHAR(10) UNIQUE,
+    modelo VARCHAR(50),
+    marca VARCHAR(50),
+    ano INT,
+    status ENUM('alugado', 'livre', 'reservado', 'manutencao'),
+    id_loja INT,
+    FOREIGN KEY (id_loja) REFERENCES Loja(id_loja)
+);
+
+CREATE TABLE Reserva (
+    id_reserva INT PRIMARY KEY AUTO_INCREMENT,
+    id_cliente INT,
+    id_carro INT,
+    id_loja_retirada INT,
+    id_loja_devolucao INT,
+    data_inicio DATE,
+    data_fim DATE,
+    com_motorista BOOLEAN,
+    status_reserva ENUM('ativa', 'cancelada', 'concluida'),
+    data_reserva DATE,
+    FOREIGN KEY (id_cliente) REFERENCES Cliente(id_cliente),
+    FOREIGN KEY (id_carro) REFERENCES Carro(id_carro),
+    FOREIGN KEY (id_loja_retirada) REFERENCES Loja(id_loja),
+    FOREIGN KEY (id_loja_devolucao) REFERENCES Loja(id_loja)
+);
+
+CREATE TABLE Pagamento (
+    id_pagamento INT PRIMARY KEY AUTO_INCREMENT,
+    id_reserva INT,
+    valor DECIMAL(10,2),
+    data_pagamento DATE,
+    forma_pagamento VARCHAR(20),
+    FOREIGN KEY (id_reserva) REFERENCES Reserva(id_reserva)
+);
+
+-- INSERTs exemplo
+INSERT INTO Loja (nome, cidade, aeroporto, endereco) VALUES ('Loja SP Aeroporto', 'São Paulo', TRUE, 'Aeroporto de Congonhas');
+INSERT INTO Cliente (nome, cpf, telefone, email) VALUES ('João Silva', '123.456.789-00', '(11) 99999-9999', 'joao@example.com');
+INSERT INTO Carro (placa, modelo, marca, ano, status, id_loja) VALUES ('ABC1D23', 'Civic', 'Honda', 2020, 'livre', 1);
+
+-- UPDATE exemplo
+UPDATE Carro SET status = 'alugado' WHERE id_carro = 1;
+
+-- DELETE exemplo
+DELETE FROM Carro WHERE id_carro = 1;
+
+-- SELECTs gerais
+SELECT * FROM Cliente;
+SELECT * FROM Loja;
+SELECT * FROM Carro;
+SELECT * FROM Reserva;
+SELECT * FROM Pagamento;
+
+-- SELECTs específicos
+SELECT * FROM Cliente WHERE id_cliente = 1;
+SELECT * FROM Loja WHERE id_loja = 1;
+SELECT * FROM Carro WHERE id_carro = 1;
+SELECT * FROM Reserva WHERE id_reserva = 1;
+SELECT * FROM Pagamento WHERE id_pagamento = 1;
+
+-- Carros disponíveis em um dia específico
+SELECT * FROM Carro
+WHERE status = 'livre' AND id_carro NOT IN (
+    SELECT id_carro FROM Reserva
+    WHERE '2025-07-01' BETWEEN data_inicio AND data_fim
+    AND status_reserva = 'ativa'
+);
+
+-- Carros reservados em um dia específico
+SELECT * FROM Carro
+WHERE id_carro IN (
+    SELECT id_carro FROM Reserva
+    WHERE '2025-07-01' BETWEEN data_inicio AND data_fim
+    AND status_reserva = 'ativa'
+);
